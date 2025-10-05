@@ -1,0 +1,574 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AR Surgery - Laparoscopic Cholecystectomy</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: white;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 100%;
+            padding: 10px;
+        }
+
+        .header {
+            text-align: center;
+            padding: 20px 0;
+            background: rgba(0,0,0,0.3);
+            backdrop-filter: blur(10px);
+            margin-bottom: 20px;
+            border-radius: 15px;
+        }
+
+        .header h1 {
+            font-size: 1.8em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .header p {
+            font-size: 1em;
+            opacity: 0.9;
+        }
+
+        .start-surgery-btn {
+            display: block;
+            width: 90%;
+            max-width: 300px;
+            margin: 30px auto;
+            padding: 20px;
+            background: linear-gradient(45deg, #28a745, #20c997);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.3em;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 8px 25px rgba(40, 167, 69, 0.3);
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .start-surgery-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 35px rgba(40, 167, 69, 0.4);
+        }
+
+        .start-surgery-btn:active {
+            transform: translateY(0);
+        }
+
+        .surgery-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.1);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+        }
+
+        .ar-interface {
+            position: relative;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .vitals-panel {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0,0,0,0.8);
+            border: 2px solid #28a745;
+            border-radius: 10px;
+            padding: 15px;
+            min-width: 200px;
+            backdrop-filter: blur(10px);
+        }
+
+        .vitals-title {
+            color: #28a745;
+            font-weight: bold;
+            margin-bottom: 10px;
+            font-size: 0.9em;
+        }
+
+        .vital-item {
+            margin: 5px 0;
+            font-size: 0.8em;
+        }
+
+        .surgery-info {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.8);
+            border: 2px solid #ffc107;
+            border-radius: 10px;
+            padding: 15px;
+            max-width: 250px;
+            backdrop-filter: blur(10px);
+        }
+
+        .surgery-title {
+            color: #ffc107;
+            font-weight: bold;
+            margin-bottom: 10px;
+            font-size: 0.9em;
+        }
+
+        .surgery-detail {
+            margin: 5px 0;
+            font-size: 0.8em;
+        }
+
+        .current-step {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.9);
+            border: 2px solid #17a2b8;
+            border-radius: 15px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .step-title {
+            color: #17a2b8;
+            font-weight: bold;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        .step-description {
+            margin-bottom: 15px;
+            line-height: 1.4;
+            font-size: 0.9em;
+        }
+
+        .step-progress {
+            width: 100%;
+            height: 8px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 15px 0;
+        }
+
+        .step-progress-fill {
+            height: 100%;
+            background: linear-gradient(45deg, #17a2b8, #28a745);
+            width: 0%;
+            transition: width 1s ease;
+        }
+
+        .instruments {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+        }
+
+        .instrument {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.2);
+            border: 2px solid white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .laparoscope {
+            top: -60px;
+            left: -80px;
+            background: rgba(200, 200, 255, 0.3);
+            border-color: #ccccff;
+        }
+
+        .grasper {
+            top: -40px;
+            right: -100px;
+            background: rgba(255, 200, 200, 0.3);
+            border-color: #ffcccc;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .anatomy-highlight {
+            position: absolute;
+            top: 40%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 200px;
+            height: 150px;
+            border: 3px solid #ffc107;
+            border-radius: 50%;
+            animation: pulse 2s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.6; transform: translate(-50%, -50%) scale(1); }
+            50% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
+        }
+
+        .educational-note {
+            position: absolute;
+            bottom: 200px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.9);
+            border: 2px solid #dc3545;
+            border-radius: 10px;
+            padding: 15px;
+            max-width: 300px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .note-title {
+            color: #dc3545;
+            font-weight: bold;
+            margin-bottom: 8px;
+            font-size: 0.9em;
+        }
+
+        .note-text {
+            font-size: 0.8em;
+            line-height: 1.3;
+        }
+
+        @media (max-width: 768px) {
+            .vitals-panel, .surgery-info {
+                position: static;
+                margin: 10px;
+                width: calc(100% - 20px);
+            }
+
+            .current-step {
+                position: static;
+                margin: 10px;
+            }
+
+            .anatomy-highlight {
+                width: 150px;
+                height: 100px;
+            }
+        }
+
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            flex-direction: column;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(255,255,255,0.3);
+            border-top: 4px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏥 AR Surgery Experience</h1>
+            <p>Laparoscopic Cholecystectomy</p>
+            <p>📱 Mobile Medical Education Platform</p>
+        </div>
+
+        <button class="start-surgery-btn" onclick="startSurgery()">
+            🏥 START SURGERY
+        </button>
+
+        <div class="surgery-info" style="position: relative; margin: 20px;">
+            <div class="surgery-title">PROCEDURE DETAILS</div>
+            <div class="surgery-detail"><strong>Target:</strong> Gallbladder</div>
+            <div class="surgery-detail"><strong>Approach:</strong> Laparoscopic (4 port technique)</div>
+            <div class="surgery-detail"><strong>Duration:</strong> 45-90 minutes</div>
+            <div class="surgery-detail"><strong>Difficulty:</strong> Intermediate</div>
+            <div class="surgery-detail"><strong>Steps:</strong> 6</div>
+        </div>
+
+        <div class="educational-note" style="position: relative;">
+            <div class="note-title">🎓 LEARNING FOCUS</div>
+            <div class="note-text">Calot triangle dissection for critical view of safety</div>
+        </div>
+    </div>
+
+    <div class="surgery-overlay" id="surgeryOverlay">
+        <div class="ar-interface">
+            <div class="vitals-panel">
+                <div class="vitals-title">📊 PATIENT VITALS</div>
+                <div class="vital-item">Heart Rate: <span id="heartRate">75</span> bpm</div>
+                <div class="vital-item">BP: <span id="bloodPressure">120/80</span> mmHg</div>
+                <div class="vital-item">SpO2: <span id="oxygen">98</span>%</div>
+                <div class="vital-item">Temp: 36.8°C</div>
+                <div class="vital-item" style="color: #28a745;">Status: <strong>STABLE</strong></div>
+            </div>
+
+            <div class="surgery-info">
+                <div class="surgery-title">🔴 SURGERY IN PROGRESS</div>
+                <div class="surgery-detail">Procedure: Laparoscopic Cholecystectomy</div>
+                <div class="surgery-detail">Target: Gallbladder</div>
+                <div class="surgery-detail">Approach: Laparoscopic</div>
+                <div class="surgery-detail">Time: <span id="elapsed">00:00</span></div>
+                <div class="surgery-detail" style="color: #28a745;">Status: <strong>ACTIVE</strong></div>
+            </div>
+
+            <div class="instruments">
+                <div class="instrument laparoscope">🔍</div>
+                <div class="instrument grasper">✂️</div>
+            </div>
+
+            <div class="anatomy-highlight"></div>
+
+            <div class="current-step">
+                <div class="step-title">STEP <span id="stepNumber">1</span>/6: <span id="stepTitle">Patient Positioning & Insufflation</span></div>
+                <div class="step-description" id="stepDescription">Position patient in reverse Trendelenburg. Create pneumoperitoneum with CO2 insufflation to 12-15 mmHg.</div>
+
+                <div class="step-progress">
+                    <div class="step-progress-fill" id="progressFill"></div>
+                </div>
+
+                <div style="font-size: 0.8em; margin-top: 10px;">
+                    <strong>🎯 Key Points:</strong>
+                    <ul id="keyPoints" style="margin-left: 20px; margin-top: 5px;">
+                    </ul>
+                </div>
+
+                <div style="font-size: 0.8em; margin-top: 10px; color: #ffc107;">
+                    <strong>🔧 Instruments:</strong> <span id="instruments"></span>
+                </div>
+            </div>
+
+            <div class="educational-note">
+                <div class="note-title">⚠️ CRITICAL SAFETY</div>
+                <div class="note-text" id="safetyNote">Maintain pneumoperitoneum pressure within safe limits</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentStep = 0;
+        let isRunning = false;
+        let startTime;
+        let stepTimer;
+        let vitalTimer;
+
+        const surgerySteps = [{"step": 1, "title": "Patient Positioning & Insufflation", "description": "Position patient in reverse Trendelenburg. Create pneumoperitoneum with CO2 insufflation to 12-15 mmHg.", "duration": "10-15 minutes", "key_points": ["Patient safety", "Optimal visualization", "Safe insufflation pressure"], "instruments": ["Veress needle", "CO2 insufflator", "Trocar"]}, {"step": 2, "title": "Port Placement & Camera Insertion", "description": "Insert 4 trocars: 12mm umbilical (camera), 5mm epigastric, 5mm midclavicular, 5mm anterior axillary.", "duration": "15-20 minutes", "key_points": ["Safe trocar insertion", "Optimal triangulation", "Injury avoidance"], "instruments": ["12mm trocar", "5mm trocars", "30\u00b0 laparoscope"]}, {"step": 3, "title": "Calot Triangle Dissection", "description": "Dissect Calot triangle to achieve critical view of safety. Identify cystic artery and cystic duct.", "duration": "20-30 minutes", "key_points": ["Critical view of safety", "Avoid bile duct injury", "Proper dissection plane"], "instruments": ["Maryland dissector", "Hook cautery", "Graspers"]}, {"step": 4, "title": "Critical View of Safety", "description": "Achieve and confirm critical view: clear Calot triangle, only 2 structures entering gallbladder, liver bed visible.", "duration": "10-15 minutes", "key_points": ["Patient safety milestone", "Injury prevention", "Proper identification"], "instruments": ["Dissector", "Camera for documentation"]}, {"step": 5, "title": "Clipping & Cutting", "description": "Apply clips to cystic artery and cystic duct. Cut structures after confirming critical view.", "duration": "10-15 minutes", "key_points": ["Secure hemostasis", "Safe cutting", "Proper clip application"], "instruments": ["Clip applier", "Scissors", "Suction/irrigation"]}, {"step": 6, "title": "Gallbladder Dissection & Removal", "description": "Dissect gallbladder from liver bed using cautery. Place in extraction bag and remove.", "duration": "15-25 minutes", "key_points": ["Hemostasis", "Specimen integrity", "Avoid perforation"], "instruments": ["Hook cautery", "Extraction bag", "Graspers"]}];
+        const complications = ["Bile duct injury", "Vascular injury", "Bowel injury", "Gallbladder perforation", "Port site hernia"];
+        const learningObjectives = ["Understand laparoscopic anatomy", "Master critical view of safety", "Recognize danger zones", "Practice safe dissection techniques", "Learn complication management"];
+
+        function startSurgery() {
+            document.querySelector('.container').style.display = 'none';
+            document.getElementById('surgeryOverlay').style.display = 'block';
+
+            isRunning = true;
+            startTime = Date.now();
+            currentStep = 0;
+
+            updateStep();
+            startVitalSigns();
+            startElapsedTimer();
+
+            // Auto-progress through steps
+            progressSteps();
+        }
+
+        function updateStep() {
+            if (currentStep >= surgerySteps.length) {
+                completeSurgery();
+                return;
+            }
+
+            const step = surgerySteps[currentStep];
+
+            document.getElementById('stepNumber').textContent = currentStep + 1;
+            document.getElementById('stepTitle').textContent = step.title;
+            document.getElementById('stepDescription').textContent = step.description;
+            document.getElementById('instruments').textContent = step.instruments.join(', ');
+
+            // Update key points
+            const keyPointsList = document.getElementById('keyPoints');
+            keyPointsList.innerHTML = '';
+            step.key_points.forEach(point => {
+                const li = document.createElement('li');
+                li.textContent = point;
+                li.style.marginBottom = '3px';
+                keyPointsList.appendChild(li);
+            });
+
+            // Update safety note based on step
+            const safetyNotes = [
+                "Maintain pneumoperitoneum pressure within safe limits",
+                "Ensure safe trocar insertion - avoid major vessels",
+                "Achieve critical view before proceeding - patient safety priority",
+                "Confirm anatomy before clipping - prevent bile duct injury",
+                "Secure hemostasis before cutting structures",
+                "Maintain specimen integrity during extraction"
+            ];
+
+            document.getElementById('safetyNote').textContent = safetyNotes[currentStep] || safetyNotes[0];
+
+            // Reset progress bar
+            document.getElementById('progressFill').style.width = '0%';
+        }
+
+        function progressSteps() {
+            if (!isRunning) return;
+
+            const stepDuration = 30000; // 30 seconds per step
+            const progressInterval = 100; // Update every 100ms
+            const totalUpdates = stepDuration / progressInterval;
+            let currentUpdate = 0;
+
+            const progressTimer = setInterval(() => {
+                if (!isRunning) {
+                    clearInterval(progressTimer);
+                    return;
+                }
+
+                currentUpdate++;
+                const progress = (currentUpdate / totalUpdates) * 100;
+                document.getElementById('progressFill').style.width = progress + '%';
+
+                if (currentUpdate >= totalUpdates) {
+                    clearInterval(progressTimer);
+                    currentStep++;
+                    updateStep();
+
+                    if (currentStep < surgerySteps.length) {
+                        setTimeout(progressSteps, 1000); // 1 second pause between steps
+                    }
+                }
+            }, progressInterval);
+        }
+
+        function startVitalSigns() {
+            vitalTimer = setInterval(() => {
+                if (!isRunning) {
+                    clearInterval(vitalTimer);
+                    return;
+                }
+
+                // Simulate realistic vital signs
+                const baseHR = 75;
+                const baseBP_sys = 120;
+                const baseBP_dia = 80;
+                const baseSpO2 = 98;
+
+                const variation = Math.sin(Date.now() / 5000) * 5;
+
+                document.getElementById('heartRate').textContent = Math.round(baseHR + variation);
+                document.getElementById('bloodPressure').textContent =
+                    Math.round(baseBP_sys + variation) + '/' + Math.round(baseBP_dia + variation/2);
+                document.getElementById('oxygen').textContent = Math.round(baseSpO2 + variation/5);
+            }, 2000);
+        }
+
+        function startElapsedTimer() {
+            setInterval(() => {
+                if (!isRunning) return;
+
+                const elapsed = Math.floor((Date.now() - startTime) / 1000);
+                const minutes = Math.floor(elapsed / 60);
+                const seconds = elapsed % 60;
+
+                document.getElementById('elapsed').textContent =
+                    String(minutes).padStart(2, '0') + ':' + String(seconds).padStart(2, '0');
+            }, 1000);
+        }
+
+        function completeSurgery() {
+            isRunning = false;
+
+            document.querySelector('.current-step .step-title').textContent = '✅ SURGERY COMPLETED SUCCESSFULLY';
+            document.querySelector('.current-step .step-description').textContent =
+                'Laparoscopic cholecystectomy completed. Patient stable. All learning objectives achieved.';
+
+            document.getElementById('progressFill').style.width = '100%';
+            document.getElementById('progressFill').style.background = 'linear-gradient(45deg, #28a745, #20c997)';
+
+            // Show completion message
+            setTimeout(() => {
+                alert('🎉 Surgery completed successfully!\n\n📚 Learning objectives achieved:\n' +
+                      learningObjectives.join('\n• ') +
+                      '\n\n👨‍⚕️ Great work, medical student!');
+            }, 2000);
+        }
+
+        // Prevent screen from sleeping during surgery
+        let wakeLock = null;
+
+        async function requestWakeLock() {
+            try {
+                if ('wakeLock' in navigator) {
+                    wakeLock = await navigator.wakeLock.request('screen');
+                }
+            } catch (err) {
+                console.log('Wake lock not supported');
+            }
+        }
+
+        // Request wake lock when surgery starts
+        document.querySelector('.start-surgery-btn').addEventListener('click', requestWakeLock);
+
+        // Handle orientation changes
+        window.addEventListener('orientationchange', () => {
+            setTimeout(() => {
+                // Recalculate layout after orientation change
+                window.scrollTo(0, 0);
+            }, 500);
+        });
+
+        // Add touch feedback
+        document.querySelectorAll('button').forEach(button => {
+            button.addEventListener('touchstart', function() {
+                this.style.transform = 'scale(0.95)';
+            });
+
+            button.addEventListener('touchend', function() {
+                this.style.transform = 'scale(1)';
+            });
+        });
+    </script>
+</body>
+</html>
