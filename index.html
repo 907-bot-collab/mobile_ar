@@ -1,10 +1,10 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AR Surgery - Laparoscopic Cholecystectomy</title>
+    <title>AR Surgery Training - Laparoscopic Cholecystectomy</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏥</text></svg>">
     <style>
         * {
             margin: 0;
@@ -264,6 +264,31 @@
             line-height: 1.3;
         }
 
+        .procedure-info {
+            position: relative;
+            margin: 20px;
+            background: rgba(0,0,0,0.8);
+            border: 2px solid #ffc107;
+            border-radius: 10px;
+            padding: 15px;
+            backdrop-filter: blur(10px);
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .info-item {
+            font-size: 0.8em;
+        }
+
+        .info-item strong {
+            color: #ffc107;
+        }
+
         @media (max-width: 768px) {
             .vitals-panel, .surgery-info {
                 position: static;
@@ -279,6 +304,10 @@
             .anatomy-highlight {
                 width: 150px;
                 height: 100px;
+            }
+
+            .info-grid {
+                grid-template-columns: 1fr;
             }
         }
 
@@ -304,13 +333,34 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+
+        .github-link {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 20px;
+            text-decoration: none;
+            font-size: 0.8em;
+            z-index: 1001;
+        }
+
+        .github-link:hover {
+            background: rgba(0,0,0,0.9);
+        }
     </style>
 </head>
 <body>
+    <a href="https://github.com/yourusername/ar-surgery-training" class="github-link" target="_blank">
+        ⭐ Star on GitHub
+    </a>
+
     <div class="container">
         <div class="header">
             <h1>🏥 AR Surgery Experience</h1>
-            <p>Laparoscopic Cholecystectomy</p>
+            <p>Laparoscopic Cholecystectomy Training</p>
             <p>📱 Mobile Medical Education Platform</p>
         </div>
 
@@ -318,18 +368,21 @@
             🏥 START SURGERY
         </button>
 
-        <div class="surgery-info" style="position: relative; margin: 20px;">
+        <div class="procedure-info">
             <div class="surgery-title">PROCEDURE DETAILS</div>
-            <div class="surgery-detail"><strong>Target:</strong> Gallbladder</div>
-            <div class="surgery-detail"><strong>Approach:</strong> Laparoscopic (4 port technique)</div>
-            <div class="surgery-detail"><strong>Duration:</strong> 45-90 minutes</div>
-            <div class="surgery-detail"><strong>Difficulty:</strong> Intermediate</div>
-            <div class="surgery-detail"><strong>Steps:</strong> 6</div>
+            <div class="info-grid">
+                <div class="info-item"><strong>Target:</strong> Gallbladder</div>
+                <div class="info-item"><strong>Approach:</strong> Laparoscopic (4 port)</div>
+                <div class="info-item"><strong>Duration:</strong> 45-90 minutes</div>
+                <div class="info-item"><strong>Difficulty:</strong> Intermediate</div>
+                <div class="info-item"><strong>Steps:</strong> 6</div>
+                <div class="info-item"><strong>Type:</strong> Minimally Invasive</div>
+            </div>
         </div>
 
         <div class="educational-note" style="position: relative;">
             <div class="note-title">🎓 LEARNING FOCUS</div>
-            <div class="note-text">Calot triangle dissection for critical view of safety</div>
+            <div class="note-text">Master the critical view of safety - the key milestone in laparoscopic cholecystectomy</div>
         </div>
     </div>
 
@@ -361,8 +414,8 @@
             <div class="anatomy-highlight"></div>
 
             <div class="current-step">
-                <div class="step-title">STEP <span id="stepNumber">1</span>/6: <span id="stepTitle">Patient Positioning & Insufflation</span></div>
-                <div class="step-description" id="stepDescription">Position patient in reverse Trendelenburg. Create pneumoperitoneum with CO2 insufflation to 12-15 mmHg.</div>
+                <div class="step-title">STEP <span id="stepNumber">1</span>/6: <span id="stepTitle">Loading...</span></div>
+                <div class="step-description" id="stepDescription">Preparing surgery simulation...</div>
 
                 <div class="step-progress">
                     <div class="step-progress-fill" id="progressFill"></div>
@@ -386,16 +439,15 @@
         </div>
     </div>
 
+    <!-- Surgery Data Script -->
+    <script src="surgery-data.js"></script>
+
     <script>
         let currentStep = 0;
         let isRunning = false;
         let startTime;
         let stepTimer;
         let vitalTimer;
-
-        const surgerySteps = [{"step": 1, "title": "Patient Positioning & Insufflation", "description": "Position patient in reverse Trendelenburg. Create pneumoperitoneum with CO2 insufflation to 12-15 mmHg.", "duration": "10-15 minutes", "key_points": ["Patient safety", "Optimal visualization", "Safe insufflation pressure"], "instruments": ["Veress needle", "CO2 insufflator", "Trocar"]}, {"step": 2, "title": "Port Placement & Camera Insertion", "description": "Insert 4 trocars: 12mm umbilical (camera), 5mm epigastric, 5mm midclavicular, 5mm anterior axillary.", "duration": "15-20 minutes", "key_points": ["Safe trocar insertion", "Optimal triangulation", "Injury avoidance"], "instruments": ["12mm trocar", "5mm trocars", "30\u00b0 laparoscope"]}, {"step": 3, "title": "Calot Triangle Dissection", "description": "Dissect Calot triangle to achieve critical view of safety. Identify cystic artery and cystic duct.", "duration": "20-30 minutes", "key_points": ["Critical view of safety", "Avoid bile duct injury", "Proper dissection plane"], "instruments": ["Maryland dissector", "Hook cautery", "Graspers"]}, {"step": 4, "title": "Critical View of Safety", "description": "Achieve and confirm critical view: clear Calot triangle, only 2 structures entering gallbladder, liver bed visible.", "duration": "10-15 minutes", "key_points": ["Patient safety milestone", "Injury prevention", "Proper identification"], "instruments": ["Dissector", "Camera for documentation"]}, {"step": 5, "title": "Clipping & Cutting", "description": "Apply clips to cystic artery and cystic duct. Cut structures after confirming critical view.", "duration": "10-15 minutes", "key_points": ["Secure hemostasis", "Safe cutting", "Proper clip application"], "instruments": ["Clip applier", "Scissors", "Suction/irrigation"]}, {"step": 6, "title": "Gallbladder Dissection & Removal", "description": "Dissect gallbladder from liver bed using cautery. Place in extraction bag and remove.", "duration": "15-25 minutes", "key_points": ["Hemostasis", "Specimen integrity", "Avoid perforation"], "instruments": ["Hook cautery", "Extraction bag", "Graspers"]}];
-        const complications = ["Bile duct injury", "Vascular injury", "Bowel injury", "Gallbladder perforation", "Port site hernia"];
-        const learningObjectives = ["Understand laparoscopic anatomy", "Master critical view of safety", "Recognize danger zones", "Practice safe dissection techniques", "Learn complication management"];
 
         function startSurgery() {
             document.querySelector('.container').style.display = 'none';
@@ -569,6 +621,19 @@
                 this.style.transform = 'scale(1)';
             });
         });
+
+        // Service worker registration for PWA functionality
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/service-worker.js')
+                    .then((registration) => {
+                        console.log('SW registered: ', registration);
+                    })
+                    .catch((registrationError) => {
+                        console.log('SW registration failed: ', registrationError);
+                    });
+            });
+        }
     </script>
 </body>
 </html>
